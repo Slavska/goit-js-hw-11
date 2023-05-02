@@ -4,6 +4,7 @@ import { getImages } from './getImages';
 import { addGallery } from './addImages';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import { scroll } from './scroll';
 
 const formEl = document.querySelector('.search-form');
 const galleryList = document.querySelector('.gallery');
@@ -78,6 +79,7 @@ async function clickBtn() {
       );
     }
     addGallery(imagesList.data.hits);
+    scroll();
     lightbox.refresh();
   } catch (error) {
     hideBtn();
