@@ -1,7 +1,6 @@
-import SimpleLightbox from 'simplelightbox';
 const galleryList = document.querySelector('.gallery');
-export const renderGallery = gallery => {
-  const addGallery = gallery
+const renderGallery = images => {
+  return images
     .map(
       ({
         webformatURL,
@@ -11,8 +10,10 @@ export const renderGallery = gallery => {
         views,
         comments,
         downloads,
-      }) => `<a class="gallery-link" href="${largeImageURL}"></a><div class="photo-card">
-      <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+      }) => `
+    <div class="photo-card">
+    <a href="${largeImageURL}">
+      <img src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
       <div class="info">
         <p class="info-item">
           <b>Likes</b>${likes}
@@ -30,6 +31,7 @@ export const renderGallery = gallery => {
     </div>`
     )
     .join('');
-
-  galleryList.insertAdjacentHTML('beforeend', addGallery);
 };
+
+export const addGallery = images =>
+  galleryList.insertAdjacentHTML('beforeend', renderGallery(images));
