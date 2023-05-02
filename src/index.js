@@ -38,7 +38,7 @@ async function submitBtn(evt) {
 
   try {
     const imagesList = await getImages(result, page);
-    let totalImages = galleryItems.data.totalHits;
+    let totalImages = imagesList.data.totalHits;
 
     if (imagesList.data.hits.length === 0) {
       clearAll();
@@ -69,7 +69,7 @@ async function clickBtn() {
 
   try {
     const imagesList = await getImages(result, page);
-    let totalPages = galleryItems.data.totalHits / perPage;
+    let totalPages = imagesList.data.totalHits / perPage;
 
     if (totalPages <= page) {
       hideBtn();
