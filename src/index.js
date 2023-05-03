@@ -1,10 +1,10 @@
 import './css/styles.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { getImages } from './getImages';
-import { addGallery } from './addImages';
+import { getImages } from './js/getImages';
+import { addGallery } from './js/addImages';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { scroll } from './scroll';
+import { scroll } from './js/scroll';
 
 const formEl = document.querySelector('.search-form');
 const galleryList = document.querySelector('.gallery');
@@ -34,9 +34,12 @@ let lightbox = new SimpleLightbox('.gallery a', {
   captionPosition: 'bottom',
 });
 
+const observer = new IntersectionObserver(entry);
+
 async function submitBtn(evt) {
   evt.preventDefault();
   let result = formEl.elements.searchQuery.value.trim();
+  clearAll();
 
   if (!result) {
     hideLoad();
@@ -47,37 +50,24 @@ async function submitBtn(evt) {
   try {
     const imagesList = await getImages(result, page);
     let totalImages = imagesList.data.totalHits;
-    let totalPages = Math.ceil(imagesList.data.totalHits / perPage);
 
-    if (imagesList.data.hits.length === 0) {
-      clearAll();
-      catchError();
-      return;
+    if (!imagesList.data.hits.length) {
+      hideLoad();
+      return catchError();
     }
+    page += 1;
     seenLoad();
     success(totalImages);
-    lightbox.refresh();
-    const entry = entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && result) {
-          seenLoad();
-          page += 1;
-          getImages(result, page).then(images => {
-            if (totalPages <= page) {
-              observer.unobserve(loading);
-              hideLoad();
-              Notify.failure(
-                "We're sorry, but you've reached the end of search results.",
-                { cssAnimationDuration: 3000 }
-              );
-            }
-            addGallery(images.data.hits);
-          });
-        }
-      });
-    };
-    const observer = new IntersectionObserver(entry);
     observer.observe(loading);
+    addGallery(imagesList.data.hits);
+    lightbox.refresh();
+    if (imagesList.data.hits.length === totalImages) {
+      hideLoad();
+      observer.unobserve(loading);
+      Notify.failure(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
   } catch (error) {
     hideLoad();
     clearAll();
@@ -86,6 +76,31 @@ async function submitBtn(evt) {
   }
 }
 
+function entry(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && formEl.elements.searchQuery.value.trim()) {
+      seenLoad();
+      page += 1;
+      getImages(formEl.elements.searchQuery.value.trim(), page)
+        .then(images => {
+          if (Math.ceil(images.data.totalHits / perPage) <= page) {
+            observer.unobserve(loading);
+            hideLoad();
+            Notify.failure(
+              "We're sorry, but you've reached the end of search results.",
+              { cssAnimationDuration: 3000 }
+            );
+          } else {
+            addGallery(images.data.hits);
+            scroll();
+          }
+        })
+        .catch(error => {
+          hideLoad(), catchError();
+        });
+    }
+  });
+}
 // loadBtn.addEventListener('click', clickBtn);
 // const loadBtn = document.querySelector('.load-more');
 // const hideBtn = () => (loadBtn.style.display = 'none');
