@@ -25,7 +25,6 @@ const clearAll = () => {
 hideLoad();
 formEl.addEventListener('submit', submitBtn);
 
-let totalPages = 0;
 let page = 1;
 let perPage = 40;
 let lightbox = new SimpleLightbox('.gallery a', {
@@ -53,7 +52,8 @@ async function submitBtn(evt) {
 
     if (!imagesList.data.hits.length) {
       hideLoad();
-      return catchError();
+      catchError();
+      return;
     }
     page += 1;
     seenLoad();
